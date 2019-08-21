@@ -33,7 +33,7 @@ for i in range(len(data_train)):
     if data_train.iloc[i,2] > 5:
         ind.append(i)
 
-TrainDataLoader = DataLoader(ind, batch_size=16, shuffle=True)
+TrainDataLoader = DataLoader(ind, batch_size=32, shuffle=True)
 print()
 
 architecture = [64, 'M', 128, 'M', 256, 'M', 256, 'M', 512, 512, 'M', 512, 512, 'M']
@@ -43,11 +43,13 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.features = self._make_layers(architecture)
         self.fc1 = nn.Linear(4608,128)
+#        self.fc2 = nn.Linear(1024,128)
 
     def forward(self, I):
         out = self.features(I)
         out = out.view(out.size(0), -1)
         out = self.fc1(out)
+#        out = self.fc2(out)
         out = F.normalize(out,p=2,dim=1)
         return out
 
@@ -78,7 +80,7 @@ def pairwise_distances(x, y=None):
     dist = x_norm + y_norm - 2.0 * torch.mm(x, y_t)
     dist[dist!=dist] = 0
 
-    return torch.sqrt(torch.clamp(dist, 0.0, np.inf))
+    return torch.clamp(dist, 0.0, np.inf)
 
 def find_valid_triplets1(labels):
     a = labels.size(0)
@@ -107,14 +109,14 @@ def find_valid_triplets2(labels):
     return valid.type(torch.cuda.FloatTensor)
 
 def batch_all_loss(embeddings, labels, margin):
-    embeddings = embeddings.detach()
+#    embeddings = embeddings.detach()
     dist_matrix = pairwise_distances(embeddings, embeddings)
 
     anc_pos_dist = torch.unsqueeze(dist_matrix,2)
     anc_neg_dist = torch.unsqueeze(dist_matrix,1)
 
+#    triplet_loss = torch.zeros(64,64,64,dtype=torch.float,device=device,requires_grad=True)
     triplet_loss = anc_pos_dist - anc_neg_dist + margin
-    triplet_loss.requires_grad_()
 
     valid = find_valid_triplets2(labels)
     triplet_loss = valid*triplet_loss
@@ -166,40 +168,22 @@ def main():
 #    criterion = nn.TripletMarginLoss(margin=0.5)
     optimizer = optim.Adam(net.parameters(),lr=0.0001)
     
-    for epoch in range(16):
+    for epoch in range(64):
         running_loss = 0.0
 
         for batch_no,(ind) in enumerate(TrainDataLoader):
             data = []
 
             for i in ind:
-                if data_train.iloc[i.item(),1] < 100:
-                    a = '00000' + str(data_train.iloc[i.item(),1])
-                elif data_train.iloc[i.item(),1] < 1000:
-                    a = '0000' + str(data_train.iloc[i.item(),1])
-                elif data_train.iloc[i.item(),1] < 10000:
-                    a = '000' + str(data_train.iloc[i.item(),1])
-                elif data_train.iloc[i.item(),1] < 100000:
-                    a = '00' + str(data_train.iloc[i.item(),1])
-                elif data_train.iloc[i.item(),1] < 1000000:
-                    a = '0' + str(data_train.iloc[i.item(),1])
-                else:
-                    a = str(data_train.iloc[i.item(),1])
-
+                a = str(data_train.iloc[i.item(),1]).zfill(7)
                 rn = random.sample(range(1, data_train.iloc[i.item(),2]+1), 4)
                 for j in rn:
-                    if (j<10):
-                        pth = os.path.join(image_dir, a, '00' + str(j) + '.jpg')
-                    elif (j<100):
-                        pth = os.path.join(image_dir, a, '0' + str(j) + '.jpg')
-                    else:
-                        pth = os.path.join(image_dir, a, str(j) + '.jpg')
-
+                    pth = os.path.join(image_dir, a, str(j).zfill(3) + '.jpg')
                     img = io.imread(pth, as_gray=True)
                     img_tensor = torch.FloatTensor(np.expand_dims(img, axis=0))
                     data.append([img_tensor, i.item()])
 
-            ImageLoader = DataLoader(data, batch_size=64, shuffle=False)
+            ImageLoader = DataLoader(data, batch_size=128, shuffle=False)
 
             for img,lbl in ImageLoader:
                 img = img.to(device)
@@ -224,19 +208,8 @@ def main():
             n1 = data_same.iloc[i,1]
             n2 = data_same.iloc[i,2]
     
-            if n1 < 10:
-                im1 = '_000' + str(n1) + '.jpg'
-            elif n1 < 100:
-                im1 = '_00' + str(n1) + '.jpg'
-            else:
-                im1 = '_0' + str(n1) + '.jpg'
-
-            if n2 < 10:
-                im2 = '_000' + str(n2) + '.jpg'
-            elif n2 < 100:
-                im2 = '_00' + str(n2) + '.jpg'
-            else:
-                im2 = '_0' + str(n2) + '.jpg'
+            im1 = '_' + str(n1).zfill(4) + '.jpg'
+            im2 = '_' + str(n2).zfill(4) + '.jpg'
 
             pth1 = os.path.join(image_dir_test, data_same.iloc[i,0], data_same.iloc[i,0] + im1)
             image1 = io.imread(pth1, as_gray=True)
@@ -283,19 +256,8 @@ def main():
             n1 = data_diff.iloc[i,1]
             n2 = data_diff.iloc[i,3]
     
-            if n1 < 10:
-                im1 = '_000' + str(n1) + '.jpg'
-            elif n1 < 100:
-                im1 = '_00' + str(n1) + '.jpg'
-            else:
-                im1 = '_0' + str(n1) + '.jpg'
-
-            if n2 < 10:
-                im2 = '_000' + str(n2) + '.jpg'
-            elif n2 < 100:
-                im2 = '_00' + str(n2) + '.jpg'
-            else:
-                im2 = '_0' + str(n2) + '.jpg'
+            im1 = '_' + str(n1).zfill(4) + '.jpg'
+            im2 = '_' + str(n2).zfill(4) + '.jpg'
 
             pth1 = os.path.join(image_dir_test, data_diff.iloc[i,0], data_diff.iloc[i,0] + im1)
             image1 = io.imread(pth1, as_gray=True)
@@ -347,19 +309,8 @@ def main():
             n1 = data_same.iloc[i+1000,1]
             n2 = data_same.iloc[i+1000,2]
     
-            if n1 < 10:
-                im1 = '_000' + str(n1) + '.jpg'
-            elif n1 < 100:
-                im1 = '_00' + str(n1) + '.jpg'
-            else:
-                im1 = '_0' + str(n1) + '.jpg'
-
-            if n2 < 10:
-                im2 = '_000' + str(n2) + '.jpg'
-            elif n2 < 100:
-                im2 = '_00' + str(n2) + '.jpg'
-            else:
-                im2 = '_0' + str(n2) + '.jpg'
+            im1 = '_' + str(n1).zfill(4) + '.jpg'
+            im2 = '_' + str(n2).zfill(4) + '.jpg'
 
             pth1 = os.path.join(image_dir_test, data_same.iloc[i+1000,0], data_same.iloc[i+1000,0] + im1)
             image1 = io.imread(pth1, as_gray=True)
@@ -387,19 +338,8 @@ def main():
             n1 = data_diff.iloc[i+1000,1]
             n2 = data_diff.iloc[i+1000,3]
     
-            if n1 < 10:
-                im1 = '_000' + str(n1) + '.jpg'
-            elif n1 < 100:
-                im1 = '_00' + str(n1) + '.jpg'
-            else:
-                im1 = '_0' + str(n1) + '.jpg'
-
-            if n2 < 10:
-                im2 = '_000' + str(n2) + '.jpg'
-            elif n2 < 100:
-                im2 = '_00' + str(n2) + '.jpg'
-            else:
-                im2 = '_0' + str(n2) + '.jpg'
+            im1 = '_' + str(n1).zfill(4) + '.jpg'
+            im2 = '_' + str(n2).zfill(4) + '.jpg'
 
             pth1 = os.path.join(image_dir_test, data_diff.iloc[i+1000,0], data_diff.iloc[i+1000,0] + im1)
             image1 = io.imread(pth1, as_gray=True)
