@@ -20,6 +20,14 @@ class FER2013Data(Dataset):
         self.data_frame = pd.read_csv(csv_file, header=None)
         self.root_dir = root_dir
         self.transform = transform
+        self.csv_file = csv_file
+        self.N = len(self.data_frame)
+        self.all_classes=['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', 'fear', 'contempt', 'unknown', 'NF']
+        # build a numpy labels array
+        dset=[]
+        for i in range(2,12):
+            dset.append(np.asarray(self.data_frame[i]))
+        self.labels = np.asarray(dset)
 
     def __len__(self):
         return len(self.data_frame)
@@ -32,6 +40,24 @@ class FER2013Data(Dataset):
         if self.transform:
             image = self.transform(image)
         return np.expand_dims(image, axis=0), class_label
+
+    def summary(self, benchmark=False):
+        # display statistics on data this class can serve up
+        print('********* DataLoader Summary *********************')
+        print('Data loaded from %s, total number of images %d'%(self.csv_file, self.N))
+        fractions = np.sum(self.labels, axis=1)/(10*len(df))
+        print('Fraction of data labelled for each emotion')
+        print('\t'.join(self.all_classes))
+        print(''.join(['%.2f%s'%(f,' '*len(cls)) for f,cls in zip(fractions,all_classes)]))
+        if benchmark:
+            import time
+            start_time = time.time()
+            # loop over up to 1000 samples from dataset and time ourselves, resetting afterward
+            N = min(1000, self.N)
+            for i in range(N):
+                img,lbl = self.__getitem__(i)
+            print('Time consumed per image: %.02fms'%(1000*(time.time()-start_time)/N))
+        print('')
 
 def FER():
     TrainData = FER2013Data(csv_file='/RawData/fer2013/FERPlus/data/FER2013Train/label.csv', root_dir='/RawData/fer2013/FERPlus/data/FER2013Train/')
