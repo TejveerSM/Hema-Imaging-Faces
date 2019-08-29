@@ -7,6 +7,12 @@ from torch.utils.data import DataLoader
 from DataLoader_Common import FER, LFW_Labels, LFW_Images, LFW_RecognitionTest, LFW_VerificationTest, CASIA_Labels, CASIA_Images
 import argparse
 
+# 1 -- FER2013 dataset
+# 2 -- LFW dataset - images
+# 3 -- CASIA dataset - images
+# 4 -- LFW dataset - for face verification
+# 5 -- LFW dataset - for face recognition
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=int, default=64)
