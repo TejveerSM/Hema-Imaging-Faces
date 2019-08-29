@@ -1,7 +1,8 @@
 # Hema-Imaging-Faces
 
-CASIA.py
-  -- Casia dataset for training the network architecture and LFW dataset for testing (face verification)
+Faces_CASIA_LFW.py
+  -- Training a face recognition model on CASIA dataset using Triplet Loss
+  -- LFW dataset for testing (face verification method)
   
 FER2013_MV.py
   -- Training and testing on FER 2013 dataset for emotion classification
