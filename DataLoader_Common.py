@@ -59,9 +59,14 @@ class FER2013Data(Dataset):
             print('Time consumed per image: %.02fms'%(1000*(time.time()-start_time)/N))
         print('')
 
+transform = transforms.Compose([transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
 def FER():
-    TrainData = FER2013Data(csv_file='/RawData/fer2013/FERPlus/data/FER2013Train/label.csv', root_dir='/RawData/fer2013/FERPlus/data/FER2013Train/')
-    TestData = FER2013Data(csv_file='/RawData/fer2013/FERPlus/data/FER2013Test/label.csv', root_dir='/RawData/fer2013/FERPlus/data/FER2013Test/')
+    TrainData = FER2013Data(csv_file='/RawData/fer2013/FERPlus/data/FER2013Train/label.csv', 
+        root_dir='/RawData/fer2013/FERPlus/data/FER2013Train/', transform=transform)
+    TestData = FER2013Data(csv_file='/RawData/fer2013/FERPlus/data/FER2013Test/label.csv', 
+        root_dir='/RawData/fer2013/FERPlus/data/FER2013Test/', transform=transform)
 
     return TrainData, TestData
 

@@ -96,6 +96,8 @@ def find_valid_triplets1(labels):
     for i in range(a):
         for j in range(a):
             for k in range(a):
+                # 'i' is anchor, 'j' is positive, 'k' is negative
+                # a triplet is valid if (i,j,k) are all distinct and label(i) is same as label(j) and label(i) is different from label(k)
                 if (i!=j) and (i!=k) and (j!=k) and (labels[i]==labels[j]) and (labels[i]!=labels[k]):
                     valid[i,j,k] = 1.0
     return valid
