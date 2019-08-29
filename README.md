@@ -7,7 +7,7 @@ FER2013_MV.py
   -- Training and testing on FER 2013 dataset for emotion classification
   
 DataLoader_Common.py
-  -- DataLoader methods for different datasets - FER, LFW, CASIA
+  -- DataLoader methods for different datasets - FER2013, LFW, CASIA
   
 run.py
   -- To load the required datasets for training and testing purposes
