@@ -192,11 +192,15 @@ def main():
     net.to(device)
 #    criterion = nn.TripletMarginLoss(margin=0.5)
     optimizer = optim.Adam(net.parameters(),lr=0.0001)
+    margin = 0.2
     
     for epoch in range(64):
         # TRAINING - start
         start = time.time()
         running_loss = 0.0
+
+        print('Epoch -', epoch+1, file=open("diff.txt", "a"))
+        print('Margin -', margin, file=open("diff.txt", "a"))
 
         for batch_no,(indices) in enumerate(IndicesDataLoader):
             data = []
@@ -228,9 +232,13 @@ def main():
                 print('[%d, %5d] loss: %.5f' %(epoch + 1, batch_no + 1, running_loss / 50), file=open("loss.txt", "a"))
                 running_loss = 0.0
 
-        print('Time taken for the current epoch (training time) -', time.time()-start, file=open("loss.txt", "a"))
+        print('Time taken for the current epoch (training time) -', np.around(time.time()-start, decimal=3), file=open("loss.txt", "a"))
         print(' ', file=open("loss.txt", "a"))
         # TRAINING - end
+
+        # increase margin by 0.1 after every 8 epochs
+        if epoch%8 == 7:
+            margin = margin + 0.1
 
         # ANALYSIS - start
         start = time.time()
@@ -270,19 +278,19 @@ def main():
         mean_centroids_avg_dist = torch.sum(centroids_avg_dist)/len(select_indices)
 
         print('Epoch -', epoch+1, file=open("analysis.txt", "a"))
-        print('Mean pairwise distance:', mean_pairwise_distance.item(), file=open("analysis.txt", "a"))
-        print('Mean distance of images from centroids:', mean_centroids_avg_dist.item(), file=open("analysis.txt", "a"))
+        print('Mean centroids pairwise distance:', np.around(mean_pairwise_distance.item(), decimals=3), file=open("analysis.txt", "a"))
+        print('Mean images-centroids distance:', np.around(mean_centroids_avg_dist.item(), decimals=3), file=open("analysis.txt", "a"))
 
         if epoch == 0:  # save the centroids in first epoch
             old_centroids = centroids
         else:           # calculate the distances of centroids' movement and their mean
             m = (centroids - old_centroids)**2
             centroids_movement = torch.sum(torch.sqrt(torch.sum(m,1)))/len(select_indices)
-            print('Mean centroids movement:', centroids_movement.item(), file=open("analysis.txt", "a"))
+            print('Mean centroids movement:', np.around(centroids_movement.item(), decimals=3), file=open("analysis.txt", "a"))
             old_centroids = centroids
         print(' ', file=open("analysis.txt", "a"))
 
-        print('Time taken for analysis -', time.time()-start, file=open("analysis.txt", "a"))
+        print('Time taken for analysis -', np.around(time.time()-start, decimal=3), file=open("analysis.txt", "a"))
         print(' ', file=open("analysis.txt", "a"))
         # ANALYSIS - end
 
@@ -457,7 +465,7 @@ def main():
 
         print('Negatives - ', neg, file=open("results.txt", "a"))
         print(' ', file=open("results.txt", "a"))
-        print('Time taken for validation and testing -', time.time()-start, file=open("results.txt", "a"))
+        print('Time taken for validation and testing -', np.around(time.time()-start, decimals=3), file=open("results.txt", "a"))
         print(' ', file=open("results.txt", "a"))
         # DISTANCES DISTRIBUTION & TESTING - end
 
