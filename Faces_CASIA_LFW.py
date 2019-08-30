@@ -288,8 +288,7 @@ def main():
             centroids_movement = torch.sum(torch.sqrt(torch.sum(m,1)))/len(select_indices)
             print('Mean centroids movement:', np.around(centroids_movement.item(), decimals=3), file=open("analysis.txt", "a"))
             old_centroids = centroids
-        print(' ', file=open("analysis.txt", "a"))
-
+            
         print('Time taken for analysis -', np.around(time.time()-start, decimal=3), file=open("analysis.txt", "a"))
         print(' ', file=open("analysis.txt", "a"))
         # ANALYSIS - end
