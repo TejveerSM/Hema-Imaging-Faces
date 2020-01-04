@@ -232,7 +232,7 @@ def main():
                 print('[%d, %5d] loss: %.5f' %(epoch + 1, batch_no + 1, running_loss / 50), file=open("loss.txt", "a"))
                 running_loss = 0.0
 
-        print('Time taken for the current epoch (training time) -', np.around(time.time()-start, decimal=3), file=open("loss.txt", "a"))
+        print('Time taken for the current epoch (training time) -', np.around(time.time()-start, decimals=3), file=open("loss.txt", "a"))
         print(' ', file=open("loss.txt", "a"))
         # TRAINING - end
 
